@@ -1,0 +1,194 @@
+Original TLB_SIZE = 8
+=== Operating Systems Lab: TLB and Multi-level Page Tables ===
+Virtual Address Space: 4294967296 bytes (4.00 GB)
+Page Size: 4096 bytes (4 KB)
+Number of Pages: 1048576
+Physical Frames: 256
+TLB Size: 8 entries
+
+=== Address Translation Test ===
+
+Test Address 1:
+Address: 0x00000000
+  Binary: 0000000000 | 0000000000 | 000000000000
+  L1 Index: 0 (0x0)
+  L2 Index: 0 (0x0)
+  Page Number: 0 (0x0)
+  Page Offset: 0 (0x0)
+
+Test Address 2:
+Address: 0x00001000
+  Binary: 0000000000 | 0000000001 | 000000000000
+  L1 Index: 0 (0x0)
+  L2 Index: 1 (0x1)
+  Page Number: 1 (0x1)
+  Page Offset: 0 (0x0)
+
+Test Address 3:
+Address: 0x12345678
+  Binary: 0001001000 | 1101000101 | 011001111000
+  L1 Index: 72 (0x48)
+  L2 Index: 837 (0x345)
+  Page Number: 74565 (0x12345)
+  Page Offset: 1656 (0x678)
+
+Test Address 4:
+Address: 0x87654321
+  Binary: 1000011101 | 1001010100 | 001100100001
+  L1 Index: 541 (0x21D)
+  L2 Index: 596 (0x254)
+  Page Number: 554580 (0x87654)
+  Page Offset: 801 (0x321)
+
+Test Address 5:
+Address: 0xFFFFFFFF
+  Binary: 1111111111 | 1111111111 | 111111111111
+  L1 Index: 1023 (0x3FF)
+  L2 Index: 1023 (0x3FF)
+  Page Number: 1048575 (0xFFFFF)
+  Page Offset: 4095 (0xFFF)
+
+=== Simple Page Table Test ===
+Simple page table initialized with 1048576 entries
+Virtual: 0x00001000 -> Physical: 0x00000000 (Page Fault)
+Virtual: 0x00002000 -> Physical: 0x00001000 (Page Fault)
+Virtual: 0x00001000 -> Physical: 0x00000000 (Hit)
+Virtual: 0x00003000 -> Physical: 0x00002000 (Page Fault)
+
+Simple Page Table Stats:
+Accesses: 4, Hits: 1, Faults: 3
+Hit Rate: 25.00%
+
+=== Two-Level Page Table Test ===
+Two-level page table initialized with L1 size: 1024
+Virtual: 0x00001000 -> Physical: 0x00000000 (Page Fault)
+Virtual: 0x40002000 -> Physical: 0x00001000 (Page Fault)
+Virtual: 0x00001000 -> Physical: 0x00000000 (Hit)
+Virtual: 0x80003000 -> Physical: 0x00002000 (Page Fault)
+Virtual: 0x40002000 -> Physical: 0x00001000 (Hit)
+
+Two-Level Page Table Stats:
+Accesses: 5, Hits: 2, Faults: 3
+Hit Rate: 40.00%
+
+=== TLB Test ===
+TLB initialized with 8 entries
+TLB Miss: VP 0x123
+TLB Miss: VP 0x456
+TLB Miss: VP 0x789
+TLB Hit: VP 0x123 -> PF 0x123
+TLB Miss: VP 0xABC
+TLB Hit: VP 0x456 -> PF 0x156
+TLB Miss: VP 0xDEF
+TLB Hit: VP 0x123 -> PF 0x123
+TLB Miss: VP 0x111
+
+TLB Contents:
+Index | Valid | Virtual Page | Physical Frame | Referenced
+------|-------|-------------|----------------|-----------
+   0  |   Y   |   0x000123   |     0x0123     |     Y
+   1  |   Y   |   0x000456   |     0x0156     |     Y
+   2  |   Y   |   0x000789   |     0x0189     |     Y
+   3  |   Y   |   0x000ABC   |     0x01BC     |     Y
+   4  |   Y   |   0x000DEF   |     0x01EF     |     Y
+   5  |   Y   |   0x000111   |     0x0111     |     Y
+   6  |   N   |   0x000000   |     0x0000     |     N
+   7  |   N   |   0x000000   |     0x0000     |     N
+
+
+TLB Stats:
+Accesses: 9, Hits: 3, Misses: 6
+Hit Rate: 33.33%
+
+=== MMU Performance Test ===
+TLB initialized with 8 entries
+Two-level page table initialized with L1 size: 1024
+MMU initialized with TLB and two-level page table
+
+--- Test 1: Random Access Pattern ---
+Generated 50000 random addresses
+Running simulation with 50000 memory accesses...
+  Processed 10000 accesses...
+  Processed 20000 accesses...
+  Processed 30000 accesses...
+  Processed 40000 accesses...
+Simulation completed.
+
+=== Random Access Results ===
+Total Memory Accesses: 50000
+TLB Hits: 0 (0.00%)
+TLB Misses: 50000 (100.00%)
+Page Hits: 2274 (4.55%)
+Page Faults: 47726 (95.45%)
+Total Cycles: 47748740
+Average Access Time: 954.97 cycles
+==============================
+Saved 1000 addresses to addresses.txt
+TLB initialized with 8 entries
+Two-level page table initialized with L1 size: 1024
+MMU initialized with TLB and two-level page table
+
+--- Test 2: Sequential Access Pattern ---
+Generated 50000 sequential addresses starting from 0x16919EA2
+Running simulation with 50000 memory accesses...
+  Processed 10000 accesses...
+  Processed 20000 accesses...
+  Processed 30000 accesses...
+  Processed 40000 accesses...
+Simulation completed.
+
+=== Sequential Access Results ===
+Total Memory Accesses: 50000
+TLB Hits: 49950 (99.90%)
+TLB Misses: 50 (0.10%)
+Page Hits: 49950 (99.90%)
+Page Faults: 50 (0.10%)
+Total Cycles: 99950
+Average Access Time: 2.00 cycles
+==============================
+TLB initialized with 8 entries
+Two-level page table initialized with L1 size: 1024
+MMU initialized with TLB and two-level page table
+
+--- Test 3: Locality of Reference (80/20) ---
+Generated 50000 addresses with locality (hot region: 0x16919EA2-0x235E6B6E)
+Running simulation with 50000 memory accesses...
+  Processed 10000 accesses...
+  Processed 20000 accesses...
+  Processed 30000 accesses...
+  Processed 40000 accesses...
+Simulation completed.
+
+=== Locality of Reference Results ===
+Total Memory Accesses: 50000
+TLB Hits: 9 (0.02%)
+TLB Misses: 49991 (99.98%)
+Page Hits: 12811 (25.62%)
+Page Faults: 37189 (74.38%)
+Total Cycles: 37317029
+Average Access Time: 746.34 cycles
+==============================
+
+=== Performance Comparison ===
+Access Pattern    | TLB Hit Rate | Page Hit Rate | Avg Access Time
+------------------|--------------|---------------|----------------
+Random            |      0.00%    |       4.55%    |       954.97
+Sequential        |     99.90%    |      99.90%    |         2.00
+Locality (80/20)  |      0.02%    |      25.62%    |       746.34
+
+=== TLB Size Impact Experiment ===
+Note: TLB size is currently fixed at 8 entries.
+To test different TLB sizes, modify TLB_SIZE in vm_memory.h and recompile.
+Suggested sizes to test: 4, 8, 16, 32, 64
+TLB initialized with 8 entries
+Two-level page table initialized with L1 size: 1024
+MMU initialized with TLB and two-level page table
+Generated 10000 addresses with locality (hot region: 0x16919EA2-0x235E6B6E)
+Running simulation with 10000 memory accesses...
+Simulation completed.
+TLB Size: 8 entries
+TLB Hit Rate: 0.03%
+Average Access Time: 938.22 cycles
+
+=== All tests completed successfully ===
+Check the generated 'addresses.txt' file for sample address traces.
